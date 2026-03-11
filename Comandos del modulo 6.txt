@@ -1,0 +1,159 @@
+Práctica 1 - Cifrado y Descifrado de Archivos con GPG2 en Linux
+
+gpg2 --version
+
+mkdir practica_gpg
+
+cd practica_gpg
+
+nano mensaje.txt
+
+cat mensaje.txt
+
+gpg2 -c mensaje.txt
+
+ls
+
+cat mensaje.txt.gpg
+
+gpg2 -d mensaje.txt.gpg
+
+gpg2 -o mensaje_descifrado.txt -d mensaje.txt.gpg
+
+cat mensaje_descifrado.txt
+_________________________________________________________________
+
+PRACTICA 2 - IPTABLES / UFW
+
+sudo apt update
+
+sudo apt install apache2 -y
+sudo apt install vsftpd -y
+sudo apt install openssh-server -y
+
+sudo systemctl start apache2
+sudo systemctl start vsftpd
+sudo systemctl start ssh
+
+sudo systemctl enable apache2
+sudo systemctl enable vsftpd
+sudo systemctl enable ssh
+
+
+http://192.168.1.50
+
+ftp localhost
+
+ssh usuario@localhost
+
+sudo iptables -A INPUT -p tcp --dport 80 -j DROP
+sudo iptables -A INPUT -p tcp --dport 21 -j DROP
+sudo iptables -A INPUT -p tcp --dport 22 -j DROP
+
+sudo iptables -L
+
+http://192.168.1.50
+ftp localhost
+ssh usuario@localhost
+
+
+sudo iptables -D INPUT -p tcp --dport 80 -j DROP
+sudo iptables -D INPUT -p tcp --dport 21 -j DROP
+sudo iptables -D INPUT -p tcp --dport 22 -j DROP
+
+sudo iptables -L
+
+
+sudo apt install ufw -y
+
+
+sudo ufw enable
+
+sudo ufw status
+sudo ufw status verbose
+
+
+sudo ufw deny 80/tcp
+sudo ufw deny 21/tcp
+sudo ufw deny 22/tcp
+
+
+sudo ufw status numbered
+
+http://192.168.1.50
+ftp localhost
+ssh usuario@IP_DEL_SERVIDOR
+
+
+sudo ufw allow 80/tcp
+sudo ufw allow 21/tcp
+sudo ufw allow 22/tcp
+
+sudo ufw status numbered
+____________________________________________________
+
+PRACTICA 3 - Implementación y Prueba de Snort como IDS
+
+sudo apt update
+sudo apt upgrade -y
+
+sudo apt install -y build-essential cmake libpcap-dev libpcre3-dev \
+libdumbnet-dev bison flex zlib1g-dev liblzma-dev openssl \
+libssl-dev libnghttp2-dev libhwloc-dev libluajit-5.1-dev \
+libsqlite3-dev uuid-dev pkg-config git autoconf libtool
+
+sudo apt install -y snort
+
+snort -V
+
+ip a
+
+cd /etc/snort
+
+ls
+
+cd /etc/snort/rules
+
+ls
+
+sudo nano /etc/snort/rules/local.rules
+
+sudo nano /etc/snort/snort.lua
+
+sudo snort -c /etc/snort/snort.lua -i eth0
+
+ping 192.168.1.50
+
+nmap -p 21 192.168.1.50
+
+nmap -p 22 192.168.1.50
+
+nmap -p 80 192.168.1.50
+
+nmap -sS 192.168.1.50
+
+sudo snort -c /etc/snort/snort.lua -i eth0
+
+________________________________________________________________
+
+PRACTICA 4 - Implementación de Autenticación en Dos Factores (2FA) para Acceso SSH
+
+sudo apt update
+sudo apt install libpam-google-authenticator -y
+
+sudo su - sistemas3
+
+google-authenticator
+
+nano /etc/pam.d/sshd
+
+nano /etc/ssh/sshd_config
+
+sudo systemctl restart ssh
+
+ssh sistemas3@192.168.1.50
+
+
+
+
+
