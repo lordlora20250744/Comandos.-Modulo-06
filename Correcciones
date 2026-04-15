@@ -1,0 +1,139 @@
+# =========================
+# PRACTICA 3 - Implementación y Prueba de Snort como IDS
+# =========================
+
+sudo apt update
+# Actualiza paquetes
+
+sudo apt install -y snort libpcap-dev
+# Instala Snort y dependencia principal
+
+snort -V
+# Verifica la versión instalada
+
+
+# ===== Configuración básica =====
+
+sudo nano /etc/snort/snort.conf
+# Editar configuración principal (Snort 2)
+
+var HOME_NET any
+var EXTERNAL_NET any
+ipvar DNS_SERVERS $HOME_NET
+
+
+# ===== Reglas de detección =====
+
+sudo nano /etc/snort/rules/local.rules
+# Crear reglas locales
+
+alert icmp any any -> $HOME_NET any (msg:"ICMP Ping Detectado"; sid:1000001; rev:1;)
+alert tcp any any -> $HOME_NET 21 (msg:"Tráfico FTP Detectado"; sid:1000002; rev:1;)
+alert tcp any any -> $HOME_NET 22 (msg:"Tráfico SSH Detectado"; sid:1000003; rev:1;)
+alert tcp any any -> $HOME_NET 80 (msg:"Tráfico HTTP Detectado"; sid:1000004; rev:1;)
+
+
+# ===== Ejecución modo IDS =====
+
+sudo snort -T -c /etc/snort/snort.conf
+# Validar sintaxis de la configuración
+
+ip a
+# Revisar la interfaz real de Kali (eth0, ens33, etc.)
+
+sudo snort -A console -q -c /etc/snort/snort.conf -i eth0 -l /var/log/snort/
+# Ejecutar IDS (cambiar eth0 según ip a)
+
+
+# ===== Pruebas =====
+
+ping 192.168.1.100
+# Detectar ICMP hacia la IP flotante
+
+nmap -p 21 192.168.1.100
+# Detectar FTP
+
+nmap -p 22 192.168.1.100
+# Detectar SSH
+
+curl http://192.168.1.100
+# Detectar HTTP
+
+
+# ===== Ver alertas =====
+
+sudo tail -f /var/log/snort/alert
+# Ver alertas en tiempo real
+
+
+# ===== Detener Snort =====
+
+sudo pkill snort
+# Finalizar Snort
+
+
+# =========================
+# PRACTICA 4 - Implementación de Autenticación en Dos Factores (2FA)
+# =========================
+
+sudo apt update
+# Actualiza paquetes
+
+sudo apt install libpam-google-authenticator -y
+# Instala módulo PAM para 2FA
+
+sudo su - sistemas3
+# Cambiar al usuario normal
+
+google-authenticator
+# Genera QR, clave secreta y códigos de emergencia
+
+# Durante el asistente responder:
+# yes = token basado en tiempo
+# yes = actualizar ~/.google_authenticator
+# no = no reutilizar códigos
+# yes = limitar ventana
+# yes = protección fuerza bruta
+
+
+# ===== Configuración PAM =====
+
+sudo nano /etc/pam.d/sshd
+# Configurar PAM para SSH
+
+auth required pam_google_authenticator.so
+
+# Buscar y comentar si existe:
+# @include common-auth
+
+
+# ===== Configuración SSH =====
+
+sudo nano /etc/ssh/sshd_config
+# Configurar SSH para usar contraseña + 2FA
+
+ChallengeResponseAuthentication yes
+UsePAM yes
+PasswordAuthentication yes
+
+sudo systemctl restart ssh
+# Reiniciar servicio SSH
+
+
+# ===== Probar desde cliente =====
+
+ssh sistemas3@192.168.1.100
+# Ingresar contraseña + código 2FA
+
+
+# ===== Desactivar 2FA (opcional) =====
+
+rm ~/.google_authenticator
+# Eliminar configuración del usuario
+
+sudo nano /etc/pam.d/sshd
+# Quitar:
+# auth required pam_google_authenticator.so
+
+sudo systemctl restart ssh
+# Reiniciar SSH
