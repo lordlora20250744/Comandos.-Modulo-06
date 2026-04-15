@@ -1,158 +1,235 @@
-Práctica 1 - Cifrado y Descifrado de Archivos con GPG2 en Linux
+# =========================
+# Práctica 1 - Cifrado y Descifrado de Archivos con GPG2 en Linux
+# =========================
 
 gpg2 --version
+# Verifica que GPG2 esté instalado
 
 mkdir practica_gpg
+# Crear carpeta de práctica
 
 cd practica_gpg
+# Entrar a la carpeta
 
 nano mensaje.txt
+# Crear archivo de texto para cifrar
+
+Este es mi mensaje secreto de la práctica de GPG2
 
 cat mensaje.txt
+# Verificar contenido original
 
 gpg2 -c mensaje.txt
+# Cifrar archivo con contraseña simétrica
 
 ls
+# Verificar que se creó mensaje.txt.gpg
 
 cat mensaje.txt.gpg
+# Intentar visualizar archivo cifrado (se verá ilegible)
 
 gpg2 -d mensaje.txt.gpg
+# Descifrar mostrando en pantalla
 
 gpg2 -o mensaje_descifrado.txt -d mensaje.txt.gpg
+# Descifrar guardando en un nuevo archivo
 
 cat mensaje_descifrado.txt
-_________________________________________________________________
+# Verificar contenido descifrado
 
-PRACTICA 2 - IPTABLES / UFW
+
+# =========================
+# PRACTICA 2 - IPTABLES / UFW
+# =========================
 
 sudo apt update
+# Actualiza paquetes
 
 sudo apt install apache2 -y
+# Instala Apache
+
 sudo apt install vsftpd -y
+# Instala FTP
+
 sudo apt install openssh-server -y
+# Instala SSH
 
 sudo systemctl start apache2
+# Inicia Apache
+
 sudo systemctl start vsftpd
+# Inicia FTP
+
 sudo systemctl start ssh
+# Inicia SSH
 
 sudo systemctl enable apache2
+# Habilita Apache al arranque
+
 sudo systemctl enable vsftpd
+# Habilita FTP al arranque
+
 sudo systemctl enable ssh
+# Habilita SSH al arranque
 
-
-http://192.168.1.50
-
-ftp localhost
-
-ssh usuario@localhost
+ssh sistemas3@localhost
+# Probar acceso SSH local
 
 sudo iptables -A INPUT -p tcp --dport 80 -j DROP
+# Bloquea HTTP
+
 sudo iptables -A INPUT -p tcp --dport 21 -j DROP
+# Bloquea FTP
+
 sudo iptables -A INPUT -p tcp --dport 22 -j DROP
+# Bloquea SSH
 
 sudo iptables -L
-
-http://192.168.1.50
-ftp localhost
-ssh usuario@localhost
-
+# Ver reglas activas
 
 sudo iptables -D INPUT -p tcp --dport 80 -j DROP
+# Elimina bloqueo HTTP
+
 sudo iptables -D INPUT -p tcp --dport 21 -j DROP
+# Elimina bloqueo FTP
+
 sudo iptables -D INPUT -p tcp --dport 22 -j DROP
+# Elimina bloqueo SSH
 
 sudo iptables -L
-
+# Verificar reglas
 
 sudo apt install ufw -y
-
+# Instalar UFW
 
 sudo ufw enable
+# Activar firewall
 
-sudo ufw status
 sudo ufw status verbose
-
+# Estado detallado
 
 sudo ufw deny 80/tcp
-sudo ufw deny 21/tcp
-sudo ufw deny 22/tcp
+# Bloquear HTTP
 
+sudo ufw deny 21/tcp
+# Bloquear FTP
+
+sudo ufw deny 22/tcp
+# Bloquear SSH
 
 sudo ufw status numbered
-
-http://192.168.1.50
-ftp localhost
-ssh usuario@IP_DEL_SERVIDOR
-
+# Ver reglas numeradas
 
 sudo ufw allow 80/tcp
+# Permitir HTTP
+
 sudo ufw allow 21/tcp
+# Permitir FTP
+
 sudo ufw allow 22/tcp
+# Permitir SSH
 
 sudo ufw status numbered
-____________________________________________________
+# Confirmar reglas
 
-PRACTICA 3 - Implementación y Prueba de Snort como IDS
+
+# =========================
+# PRACTICA 3 - Implementación y Prueba de Snort como IDS
+# =========================
 
 sudo apt update
+# Actualiza paquetes
+
 sudo apt upgrade -y
+# Actualiza sistema
 
 sudo apt install -y build-essential cmake libpcap-dev libpcre3-dev \
 libdumbnet-dev bison flex zlib1g-dev liblzma-dev openssl \
 libssl-dev libnghttp2-dev libhwloc-dev libluajit-5.1-dev \
 libsqlite3-dev uuid-dev pkg-config git autoconf libtool
+# Instala dependencias necesarias
 
 sudo apt install -y snort
+# Instala Snort
 
 snort -V
+# Verifica versión
 
 ip a
-
-cd /etc/snort
-
-ls
+# Revisar interfaz de red real (eth0, ens33, etc.)
 
 cd /etc/snort/rules
-
-ls
+# Entrar a carpeta de reglas
 
 sudo nano /etc/snort/rules/local.rules
+# Crear reglas locales
+
+alert icmp any any -> $HOME_NET any (msg:"ICMP Ping Detectado"; sid:1000001; rev:1;)
+alert tcp any any -> $HOME_NET 21 (msg:"Tráfico FTP Detectado"; sid:1000002; rev:1;)
+alert tcp any any -> $HOME_NET 22 (msg:"Tráfico SSH Detectado"; sid:1000003; rev:1;)
+alert tcp any any -> $HOME_NET 80 (msg:"Tráfico HTTP Detectado"; sid:1000004; rev:1;)
 
 sudo nano /etc/snort/snort.lua
+# Buscar la sección ips y verificar/agregar la inclusión de local.rules
+
+ips =
+{
+    rules = [[
+        include /etc/snort/rules/local.rules
+    ]]
+}
 
 sudo snort -c /etc/snort/snort.lua -i eth0
+# Ejecutar Snort (cambiar eth0 según ip a)
 
 ping 192.168.1.50
+# Probar alerta ICMP
 
 nmap -p 21 192.168.1.50
+# Probar alerta FTP
 
 nmap -p 22 192.168.1.50
+# Probar alerta SSH
 
 nmap -p 80 192.168.1.50
+# Probar alerta HTTP
 
 nmap -sS 192.168.1.50
+# Escaneo SYN general
 
-sudo snort -c /etc/snort/snort.lua -i eth0
 
-________________________________________________________________
-
-PRACTICA 4 - Implementación de Autenticación en Dos Factores (2FA) para Acceso SSH
+# =========================
+# PRACTICA 4 - Implementación de Autenticación en Dos Factores (2FA) para Acceso SSH
+# =========================
 
 sudo apt update
+# Actualiza paquetes
+
 sudo apt install libpam-google-authenticator -y
+# Instala módulo 2FA
 
 sudo su - sistemas3
+# Cambia al usuario final
 
 google-authenticator
+# Genera secreto QR y códigos de recuperación
 
 nano /etc/pam.d/sshd
+# Configurar PAM para usar Google Authenticator
+
+auth required pam_google_authenticator.so
 
 nano /etc/ssh/sshd_config
+# Habilitar autenticación combinada
+
+ChallengeResponseAuthentication yes
+UsePAM yes
 
 sudo systemctl restart ssh
+# Reinicia SSH
 
 ssh sistemas3@192.168.1.50
-
+# Probar login con contraseña + código
 
 
 
